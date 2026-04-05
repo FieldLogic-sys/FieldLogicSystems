@@ -1,0 +1,105 @@
+@page "/tracker"
+@using FieldLogic.Web.Models
+@rendermode InteractiveAuto
+
+<PageTitle>Media Archive | FieldLogic</PageTitle>
+
+<div class="p-8 bg-slate-950 min-h-screen text-slate-200">
+    <div class="max-w-4xl mx-auto">
+        
+        <h1 class="text-3xl font-black text-blue-500 uppercase tracking-tighter mb-8 border-b border-slate-800 pb-4">
+            Field Intelligence: Media Archive
+        </h1>
+
+        @* Manual Entry Module *@
+        <div class="mb-8 p-6 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl">
+            <h3 class="text-blue-400 font-mono text-[10px] uppercase tracking-[0.2em] mb-4">Manual Entry Commissioning</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                @* Improved Contrast Inputs *@
+                <input @bind="newEntry.Title" placeholder="Title (e.g. Overlord)" 
+                       class="bg-slate-950 border border-slate-700 p-2 rounded text-sm text-white focus:border-blue-500 outline-none placeholder:text-slate-600" />
+                
+                <div class="flex items-center bg-slate-950 border border-slate-700 rounded px-2">
+                    <span class="text-[10px] font-mono text-slate-500 uppercase mr-2">EP</span>
+                    <input @bind="newEntry.Progress" type="number" 
+                           class="bg-transparent w-full p-2 text-sm text-white outline-none" />
+                </div>
+                
+                <select @bind="newEntry.Status" 
+                        class="bg-slate-950 border border-slate-700 p-2 rounded text-sm outline-none text-slate-300">
+                    <option value="Watching">Watching</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Plan to Watch">Plan to Watch</option>
+                </select>
+
+                <button @onclick="AddMedia" 
+                        class="bg-blue-600 hover:bg-blue-500 text-white font-black py-2 px-4 rounded transition-all uppercase text-[10px] tracking-widest shadow-[0_0_15px_rgba(37,99,235,0.3)]">
+                    Commit Entry
+                </button>
+            </div>
+        </div>
+
+        @* Data Table *@
+        <div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur-md shadow-inner">
+            <table class="w-full text-left">
+                <thead class="bg-slate-800/50 text-slate-400 text-[10px] uppercase tracking-[0.2em]">
+                    <tr>
+                        <th class="p-4">Title</th>
+                        <th class="p-4">Type</th>
+                        <th class="p-4">Progress</th>
+                        <th class="p-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    @foreach (var item in MyMedia)
+                    {
+                        <tr class="hover:bg-blue-500/5 transition-colors group">
+                            <td class="p-4 font-bold text-white group-hover:text-blue-400 transition-colors">@item.Title</td>
+                            <td class="p-4 text-xs text-slate-400">@item.Type</td>
+                            <td class="p-4 font-mono text-blue-400 text-sm">EP @item.Progress</td>
+                            <td class="p-4">
+                                <span class="px-2 py-1 rounded border border-slate-700 bg-slate-800 text-[9px] font-bold uppercase tracking-tighter text-slate-300">
+                                    @item.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<MediaEntry> MyMedia = new();
+    private MediaEntry newEntry = new();
+
+    protected override void OnInitialized()
+    {
+        // Initializing the "Inlet"
+        MyMedia.Add(new MediaEntry { Title = "Solo Leveling", Type = "Anime", Progress = 12, Status = "Watching" });
+    }
+
+    private void AddMedia()
+    {
+        if (!string.IsNullOrWhiteSpace(newEntry.Title))
+        {
+            // Create a discrete copy to avoid reference issues during serialization
+            var entryToAdd = new MediaEntry 
+            { 
+                Title = newEntry.Title, 
+                Progress = newEntry.Progress, 
+                Status = newEntry.Status,
+                Type = "Anime" 
+            };
+
+            MyMedia.Add(entryToAdd);
+            
+            // Wipe the buffer
+            newEntry = new();
+            
+            // Force a UI refresh to ensure the assembly sees the update
+            StateHasChanged();
+        }
+    }
+}

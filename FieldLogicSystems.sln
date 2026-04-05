@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FieldLogic.Web", "FieldLogic.Web\FieldLogic.Web\FieldLogic.Web.csproj", "{4AE2ED69-8F31-4E91-950D-81EF09F1F166}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FieldLogic.Web.Client", "FieldLogic.Web\FieldLogic.Web.Client\FieldLogic.Web.Client.csproj", "{23D18269-8E84-416B-8DC9-074A7833E8D1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4AE2ED69-8F31-4E91-950D-81EF09F1F166}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AE2ED69-8F31-4E91-950D-81EF09F1F166}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AE2ED69-8F31-4E91-950D-81EF09F1F166}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AE2ED69-8F31-4E91-950D-81EF09F1F166}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23D18269-8E84-416B-8DC9-074A7833E8D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23D18269-8E84-416B-8DC9-074A7833E8D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23D18269-8E84-416B-8DC9-074A7833E8D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23D18269-8E84-416B-8DC9-074A7833E8D1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

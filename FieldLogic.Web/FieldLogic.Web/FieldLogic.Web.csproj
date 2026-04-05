@@ -8,17 +8,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\FieldLogic.Web.Client\FieldLogic.Web.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
+        <ProjectReference Include="..\FieldLogic.Web.Client\FieldLogic.Web.Client.csproj"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="wwwroot\lib\" />
+        <Folder Include="wwwroot\lib\"/>
     </ItemGroup>
 
     <Target Name="Tailwind" BeforeTargets="Build">
-        <Message Importance="high" Text="[SYSTEM] Calibrating Tailwind v4 Assets..." />
-        <Exec Command="..\..\_tools\tailwindcss.exe -i .\wwwroot\css\app.tailwind.css -o .\wwwroot\css\site.css" />
+        <Message Importance="high" Text="[SYSTEM] Calibrating Tailwind v4 Assets..."/>
+        <Exec Command="..\..\_tools\tailwindcss.exe -i .\wwwroot\css\app.tailwind.css -o .\wwwroot\css\site.css"/>
     </Target>
 
 </Project>

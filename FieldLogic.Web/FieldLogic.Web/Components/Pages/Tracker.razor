@@ -57,7 +57,27 @@
                 @foreach (var item in _myMedia)
                 {
                     <tr class="hover:bg-blue-500/5 transition-colors group">
-                        <td class="p-4 font-bold text-white group-hover:text-blue-400 transition-colors">@item.Title</td>
+                        <td class="p-4 font-bold text-white transition-colors">
+                            @if (_editingId == item.Id)
+                            {
+                                @* EDIT MODE: Input field with "Save on Enter" or "Blur" *@
+                                <input @bind="_tempTitle"
+                                       @onblur="() => SaveTitle(item)"
+                                       @onkeyup="@(e =>
+                                                 {
+                                                     if (e.Key == "Enter") SaveTitle(item);
+                                                 })"
+                                       class="bg-slate-950 border border-blue-500 p-1 rounded text-sm text-white outline-none w-full"
+                                       auto-focus/>
+                            }
+                            else
+                            {
+                                @* READ MODE: Click to trigger edit *@
+                                <span @onclick="() => StartEditing(item)" class="cursor-pointer hover:text-blue-400">
+                                    @item.Title
+                                </span>
+                            }
+                        </td>
                         <td class="p-4 text-xs text-slate-400">@item.Type</td>
                         <td class="p-4">
                             <div class="flex items-center space-x-3">
@@ -79,10 +99,15 @@
                             </div>
                         </td>
                         <td class="p-4">
-                                <span
-                                    class="px-2 py-1 rounded border border-slate-700 bg-slate-800 text-[9px] font-bold uppercase tracking-tighter text-slate-300">
-                                    @item.Status
-                                </span>
+                            <select @onchange="(e) => UpdateStatus(item, e.Value?.ToString())"
+                                    class="bg-slate-800 border border-slate-700 p-1 rounded text-[10px] font-bold uppercase tracking-tighter text-slate-300 outline-none focus:border-blue-500">
+                                <option value="Watching" selected="@(item.Status == "Watching")">Watching</option>
+                                <option value="Completed" selected="@(item.Status == "Completed")">Completed</option>
+                                <option value="Plan to Watch" selected="@(item.Status == "Plan to Watch")">Plan to
+                                    Watch
+                                </option>
+                                <option value="Dropped" selected="@(item.Status == "Dropped")">Dropped</option>
+                            </select>
                         </td>
                     </tr>
                 }
@@ -95,6 +120,8 @@
 @code {
     private List<MediaEntry> _myMedia = new();
     private MediaEntry _newEntry = new();
+    private int? _editingId;
+    private string _tempTitle = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -147,6 +174,46 @@
 
         // Commits te changes to the SSD
         await context.SaveChangesAsync();
+    }
+
+    private async Task UpdateStatus(MediaEntry item, string? newStatus)
+    {
+        if (string.IsNullOrWhiteSpace(newStatus)) return;
+        await using var context = await DbFactory.CreateDbContextAsync();
+
+        // Attaching and tracking changes
+        context.MediaEntries.Attach(item);
+        item.Status = newStatus;
+
+        // Mark specifically the Status property as modified
+        context.Entry(item).Property(x => x.Status).IsModified = true;
+        await context.SaveChangesAsync();
+
+
+        StateHasChanged();
+    }
+
+
+    private void StartEditing(MediaEntry item)
+    {
+        _editingId = item.Id;
+        _tempTitle = item.Title ?? "";
+    }
+
+    private async Task SaveTitle(MediaEntry item)
+    {
+        if (!string.IsNullOrWhiteSpace(_tempTitle))
+        {
+            await using var context = await DbFactory.CreateDbContextAsync();
+            context.MediaEntries.Attach(item);
+
+            item.Title = _tempTitle;
+            context.Entry(item).Property(x => x.Title).IsModified = true;
+
+            await context.SaveChangesAsync();
+        }
+
+        _editingId = null;
     }
 
 }

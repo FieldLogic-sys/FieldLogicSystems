@@ -1,7 +1,12 @@
 using FieldLogic.Web.Client.Pages;
 using FieldLogic.Web.Components;
+using FieldLogic.Web.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseSqlite("Data Source=FieldLogic.db"));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

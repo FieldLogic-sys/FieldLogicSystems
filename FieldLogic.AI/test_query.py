@@ -1,28 +1,32 @@
 import chromadb
 from chromadb.utils import embedding_functions
 
-# --- CONFIG ---
 DB_Path = "./vector_db"
 
 def ask_the_brain(question):
-    # 1. Connect to the existing library
     client = chromadb.PersistentClient(path=DB_Path)
     ef = embedding_functions.DefaultEmbeddingFunction()
     collection = client.get_collection(name="field_knowledge", embedding_function=ef)
 
-    # 2. Search for the top 2 closest matches
-    print(f"[*] Searching for: {question}")
-    results = collection.query(
-        query_texts=[question],
-        n_results=2
-    )
+    # QUERY EXPANSION: If Tony types just a number, make it a high-fidelity search
+    if question.isdigit():
+        processed_query = f"Error Code {question}"
+    else:
+        processed_query = question
 
-    # 3. Print the results
-    for i, doc in enumerate(results['documents'][0]):
-        source = results['metadatas'][0][i]['source']
-        print(f"\n--- Result {i+1} (Source: {source}) ---")
-        print(doc)
+    print(f"[*] Searching for: {processed_query}")
+    results = collection.query(query_texts=[processed_query], n_results=1)
+
+    distance = results['distances'][0][0]
+
+    # 1.10 is the 'Sweet Spot' for this manual
+    if distance > 1.10:
+        print(f"\n[!] NO DIRECT MATCH (Confidence: {distance:.2f})")
+        print("This may be in a different MDE or requires an LLM for interpretation.")
+    else:
+        print(f"\n--- Verified Field Logic (Confidence: {distance:.2f}) ---")
+        print(results['documents'][0][0])
 
 if __name__ == "__main__":
-    # TEST: Let's see if it finds the 5150 steps
-    ask_the_brain("What are the troubleshooting steps for error 5198?")
+    # Test your IS-HUB here now!
+    ask_the_brain("24")

@@ -1,4 +1,5 @@
 @page "/tracker"
+@using FieldLogic.Shared
 @using FieldLogic.Web.Models
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<AppDbContext> DbFactory
@@ -6,127 +7,85 @@
 
 <PageTitle>Media Archive | FieldLogic</PageTitle>
 
-<div class="p-8 bg-slate-950 min-h-screen text-slate-200">
-    <div class="max-w-4xl mx-auto">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h3" Class="text-blue-500 font-black mb-6 uppercase tracking-tighter">
+        Field Intelligence: Media Archive
+    </MudText>
 
-        <h1 class="text-3xl font-black text-blue-500 uppercase tracking-tighter mb-8 border-b border-slate-800 pb-4">
-            Field Intelligence: Media Archive
-        </h1>
+    @* Manual Entry Module *@
+    <MudPaper Elevation="4" Class="p-6 bg-slate-900 border border-slate-800 rounded-xl mb-8">
+        <MudText Typo="Typo.overline" Class="text-blue-400 mb-4 font-mono">Commissioning New Entry</MudText>
+        <MudGrid Spacing="2" AlignItems="AlignItems.Center">
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="_newEntry.Title" Label="Title" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
+            <MudItem xs="12" md="2">
+                <MudNumericField @bind-Value="_newEntry.Progress" Label="EP" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudSelect @bind-Value="_newEntry.Status" Label="Status" Variant="Variant.Outlined" Margin="Margin.Dense">
+                    <MudSelectItem Value="@("Watching")">Watching</MudSelectItem>
+                    <MudSelectItem Value="@("Completed")">Completed</MudSelectItem>
+                    <MudSelectItem Value="@("Plan to Watch")">Plan to Watch</MudSelectItem>
+                    <MudSelectItem Value="@("Dropped")">Dropped</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudButton OnClick="AddMedia" Variant="Variant.Filled" Color="Color.Primary" FullWidth Class="py-3 font-black">
+                    COMMIT TO SSD
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
 
-        @* Manual Entry Module *@
-        <div class="mb-8 p-6 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl">
-            <h3 class="text-blue-400 font-mono text-[10px] uppercase tracking-[0.2em] mb-4">Manual Entry
-                Commissioning</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                @* Improved Contrast Inputs *@
-                <input @bind="_newEntry.Title" placeholder="Title (e.g. Overlord)"
-                       class="bg-slate-950 border border-slate-700 p-2 rounded text-sm text-white focus:border-blue-500 outline-none placeholder:text-slate-600"/>
-
-                <div class="flex items-center bg-slate-950 border border-slate-700 rounded px-2">
-                    <span class="text-[10px] font-mono text-slate-500 uppercase mr-2">EP</span>
-                    <input @bind="_newEntry.Progress" type="number"
-                           class="bg-transparent w-full p-2 text-sm text-white outline-none"/>
-                </div>
-
-                <select @bind="_newEntry.Status"
-                        class="bg-slate-950 border border-slate-700 p-2 rounded text-sm outline-none text-slate-300">
-                    <option value="Watching">Watching</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Plan to Watch">Plan to Watch</option>
-                </select>
-
-                <button @onclick="AddMedia"
-                        class="bg-blue-600 hover:bg-blue-500 text-white font-black py-2 px-4 rounded transition-all uppercase text-[10px] tracking-widest shadow-[0_0_15px_rgba(37,99,235,0.3)]">
-                    Commit Entry
-                </button>
-            </div>
-        </div>
-
-        @* Data Table *@
-        <div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur-md shadow-inner">
-            <table class="w-full text-left">
-                <thead class="bg-slate-800/50 text-slate-400 text-[10px] uppercase tracking-[0.2em]">
-                <tr>
-                    <th class="p-4">Title</th>
-                    <th class="p-4">Type</th>
-                    <th class="p-4">Progress</th>
-                    <th class="p-4">Status</th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-800">
-                @foreach (var item in _myMedia)
+    @* Data Table *@
+    <MudTable Items="@_myMedia" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="4" Class="bg-slate-900/50 border border-slate-800">
+        <HeaderContent>
+            <MudTh>TITLE</MudTh>
+            <MudTh>TYPE</MudTh>
+            <MudTh>PROGRESS</MudTh>
+            <MudTh>STATUS</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Title">
+                @if (_editingId == context.Id)
                 {
-                    <tr class="hover:bg-blue-500/5 transition-colors group">
-                        <td class="p-4 font-bold text-white transition-colors">
-                            @if (_editingId == item.Id)
-                            {
-                                @* EDIT MODE: Input field with "Save on Enter" or "Blur" *@
-                                <input @bind="_tempTitle"
-                                       @onblur="() => SaveTitle(item)"
-                                       @onkeyup="@(e =>
-                                                 {
-                                                     if (e.Key == "Enter") SaveTitle(item);
-                                                 })"
-                                       class="bg-slate-950 border border-blue-500 p-1 rounded text-sm text-white outline-none w-full"
-                                       auto-focus/>
-                            }
-                            else
-                            {
-                                @* READ MODE: Click to trigger edit *@
-                                <span @onclick="() => StartEditing(item)" class="cursor-pointer hover:text-blue-400">
-                                    @item.Title
-                                </span>
-                            }
-                        </td>
-                        <td class="p-4 text-xs text-slate-400">@item.Type</td>
-                        <td class="p-4">
-                            <div class="flex items-center space-x-3">
-                                @* Decrement Button *@
-                                <button @onclick="() => AdjustProgress(item, -1)"
-                                        class="text-slate-500 hover:text-blue-400 font-black transition-colors px-2">
-                                    -
-                                </button>
-
-                                <span class="font-mono text-blue-400 text-sm w-12 text-center">
-                                        EP @item.Progress
-                                    </span>
-
-                                @* Increment Button *@
-                                <button @onclick="() => AdjustProgress(item, 1)"
-                                        class="text-slate-500 hover:text-blue-400 font-black transition-colors px-2">
-                                    +
-                                </button>
-                            </div>
-                        </td>
-                        <td class="p-4">
-                            <select @onchange="(e) => UpdateStatus(item, e.Value?.ToString())"
-                                    class="bg-slate-800 border border-slate-700 p-1 rounded text-[10px] font-bold uppercase tracking-tighter text-slate-300 outline-none focus:border-blue-500">
-                                <option value="Watching" selected="@(item.Status == "Watching")">Watching</option>
-                                <option value="Completed" selected="@(item.Status == "Completed")">Completed</option>
-                                <option value="Plan to Watch" selected="@(item.Status == "Plan to Watch")">Plan to
-                                    Watch
-                                </option>
-                                <option value="Dropped" selected="@(item.Status == "Dropped")">Dropped</option>
-                            </select>
-                        </td>
-                    </tr>
+                    <MudTextField @bind-Value="_tempTitle" OnBlur="() => SaveTitle(context)" Variant="Variant.Outlined" Margin="Margin.Dense" AutoFocus />
                 }
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                else
+                {
+                    <MudText @onclick="() => StartEditing(context)" Class="cursor-pointer hover:text-blue-400 font-bold">
+                        @context.Title
+                    </MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Type">@context.Type</MudTd>
+            <MudTd DataLabel="Progress">
+                <div class="flex items-center">
+                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="() => AdjustProgress(context, -1)" />
+                    <MudText Class="mx-2 font-mono text-blue-400">EP @context.Progress</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="() => AdjustProgress(context, 1)" />
+                </div>
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudSelect T="string" Value="@context.Status" ValueChanged="(s) => UpdateStatus(context, s)" Variant="Variant.Text" Margin="Margin.Dense">
+                    <MudSelectItem Value="@("Watching")">Watching</MudSelectItem>
+                    <MudSelectItem Value="@("Completed")">Completed</MudSelectItem>
+                    <MudSelectItem Value="@("Plan to Watch")">Plan to Watch</MudSelectItem>
+                    <MudSelectItem Value="@("Dropped")">Dropped</MudSelectItem>
+                </MudSelect>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
 
 @code {
     private List<MediaEntry> _myMedia = new();
-    private MediaEntry _newEntry = new();
+    private MediaEntry _newEntry = new() { Status = "Watching" };
     private int? _editingId;
     private string _tempTitle = "";
 
-    protected override async Task OnInitializedAsync()
-    {
-        await ReloadFromDisk();
-    }
+    protected override async Task OnInitializedAsync() => await ReloadFromDisk();
 
     private async Task ReloadFromDisk()
     {
@@ -136,63 +95,33 @@
 
     private async Task AddMedia()
     {
-        if (!string.IsNullOrWhiteSpace(_newEntry.Title))
-        {
-            await using var context = await DbFactory.CreateDbContextAsync();
-
-
-            // Add to the Database context
-            await context.MediaEntries.AddAsync(_newEntry);
-
-            // Commit the changes to the SSD
-            await context.SaveChangesAsync();
-
-            _newEntry = new MediaEntry();
-            await ReloadFromDisk();
-        }
+        if (string.IsNullOrWhiteSpace(_newEntry.Title)) return;
+        await using var context = await DbFactory.CreateDbContextAsync();
+        await context.MediaEntries.AddAsync(_newEntry);
+        await context.SaveChangesAsync();
+        _newEntry = new MediaEntry { Status = "Watching" };
+        await ReloadFromDisk();
     }
 
     private async Task AdjustProgress(MediaEntry item, int amount)
     {
         await using var context = await DbFactory.CreateDbContextAsync();
-
-
-        // Attach tells the DB that there is an object already in memory
-
         context.MediaEntries.Attach(item);
-
-
-        // Applies the math and ensures episodes do not go below 0
-
-
         item.Progress = Math.Max(0, item.Progress + amount);
-
-
-        // Specifically make 'Progress' as the "Dirty" property that needs saving
         context.Entry(item).Property(x => x.Progress).IsModified = true;
-
-
-        // Commits te changes to the SSD
         await context.SaveChangesAsync();
     }
 
-    private async Task UpdateStatus(MediaEntry item, string? newStatus)
+    private async Task UpdateStatus(MediaEntry item, string newStatus)
     {
         if (string.IsNullOrWhiteSpace(newStatus)) return;
         await using var context = await DbFactory.CreateDbContextAsync();
-
-        // Attaching and tracking changes
         context.MediaEntries.Attach(item);
         item.Status = newStatus;
-
-        // Mark specifically the Status property as modified
         context.Entry(item).Property(x => x.Status).IsModified = true;
         await context.SaveChangesAsync();
-
-
-        StateHasChanged();
+        await ReloadFromDisk();
     }
-
 
     private void StartEditing(MediaEntry item)
     {
@@ -206,14 +135,11 @@
         {
             await using var context = await DbFactory.CreateDbContextAsync();
             context.MediaEntries.Attach(item);
-
             item.Title = _tempTitle;
             context.Entry(item).Property(x => x.Title).IsModified = true;
-
             await context.SaveChangesAsync();
         }
-
         _editingId = null;
+        await ReloadFromDisk();
     }
-
 }

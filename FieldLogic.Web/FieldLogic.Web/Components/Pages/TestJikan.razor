@@ -1,0 +1,26 @@
+@page "/test-jikan"
+@using FieldLogic.Shared
+@inject HttpClient Http
+
+<MudText Typo="Typo.h4">Jikan API Test</MudText>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunTest">Search Iruma-kun</MudButton>
+
+@if (results != null)
+{
+    @foreach (var anime in results)
+    {
+        <MudAlert Severity="Severity.Success">Found: @anime.TitleEnglish</MudAlert>
+    }
+}
+
+@code {
+    private List<AnimeData>? results;
+
+    private async Task RunTest()
+    {
+        // Pinging the API directly for the "Quick Win"
+        var response = await Http.GetFromJsonAsync<AnimeSearchResponse>("https://api.jikan.moe/v4/anime?q=Iruma-kun&limit=3");
+        results = response?.Data;
+    }
+}

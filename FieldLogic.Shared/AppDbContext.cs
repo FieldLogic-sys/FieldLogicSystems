@@ -9,12 +9,8 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<MediaEntry> MediaEntries { get; set; }
-    public DbSet<JournalEntry> JournalEntries { get; set; } // This will turn green now
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-        }
-    }
+    public DbSet<JournalEntry> JournalEntries { get; set; }
+    // Gemini assisted in setting up a proper keystore
+    // We REMOVE OnConfiguring because Program.cs handles the connection.
+    // This makes the DbContext "Environment Agnostic" (it doesn't care where the DB is).
 }

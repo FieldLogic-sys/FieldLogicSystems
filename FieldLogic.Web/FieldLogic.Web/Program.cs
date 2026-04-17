@@ -6,16 +6,13 @@ using FieldLogic.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database Configuration - Use Npgsql for your Postgres DB
-// builder.Services.AddDbContextFactory<AppDbContext>(options =>
-//     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+// 1. Database Configuration
+// This pulls from User Secrets locally and Environment Variables in Production
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? throw new InvalidOperationException("CRITICAL FAULT: Connection string 'DefaultConnection' not found in appsettings.json.");
+                       ?? throw new InvalidOperationException("CRITICAL FAULT: Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
-
 
 // 2. Register Services
 builder.Services.AddHttpClient<JikanService>();
@@ -38,7 +35,7 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
 
-// THE KEY FIX: Use the full namespace for App to avoid the 'FieldLogic.Web' conflict
+// Map the Root Component
 app.MapRazorComponents<FieldLogic.Web.Components.App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

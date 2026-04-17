@@ -12,11 +12,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        ?? throw new InvalidOperationException("CRITICAL FAULT: Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x =>
+        x.MigrationsAssembly("FieldLogic.Web")));
 
 // 2. Register Services
 builder.Services.AddHttpClient<JikanService>();
 builder.Services.AddMudServices();
+builder.Services.AddScoped<IntelligenceService>();
 
 // 3. Blazor Setup
 builder.Services.AddRazorComponents()

@@ -1,145 +1,192 @@
 @page "/tracker"
 @using FieldLogic.Shared
-@using FieldLogic.Web.Models
+@using FieldLogic.Web.Services
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<AppDbContext> DbFactory
+@inject JikanService Jikan
 @rendermode InteractiveAuto
 
-<PageTitle>Media Archive | FieldLogic</PageTitle>
-
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
-    <MudText Typo="Typo.h3" Class="text-blue-500 font-black mb-6 uppercase tracking-tighter">
-        Field Intelligence: Media Archive
-    </MudText>
+    <MudText Typo="Typo.h3" Color="Color.Primary" Style="font-weight: 900;">MEDIA INTELLIGENCE UNIT</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-6 mud-text-secondary font-mono">STATUS: DATABASE CONNECTED // API: JIKAN V4</MudText>
 
-    @* Manual Entry Module *@
-    <MudPaper Elevation="4" Class="p-6 bg-slate-900 border border-slate-800 rounded-xl mb-8">
-        <MudText Typo="Typo.overline" Class="text-blue-400 mb-4 font-mono">Commissioning New Entry</MudText>
-        <MudGrid Spacing="2" AlignItems="AlignItems.Center">
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="_newEntry.Title" Label="Title" Variant="Variant.Outlined" Margin="Margin.Dense" />
-            </MudItem>
-            <MudItem xs="12" md="2">
-                <MudNumericField @bind-Value="_newEntry.Progress" Label="EP" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" />
-            </MudItem>
-            <MudItem xs="12" md="3">
-                <MudSelect @bind-Value="_newEntry.Status" Label="Status" Variant="Variant.Outlined" Margin="Margin.Dense">
-                    <MudSelectItem Value="@("Watching")">Watching</MudSelectItem>
-                    <MudSelectItem Value="@("Completed")">Completed</MudSelectItem>
-                    <MudSelectItem Value="@("Plan to Watch")">Plan to Watch</MudSelectItem>
-                    <MudSelectItem Value="@("Dropped")">Dropped</MudSelectItem>
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="3">
-                <MudButton OnClick="AddMedia" Variant="Variant.Filled" Color="Color.Primary" FullWidth Class="py-3 font-black">
-                    COMMIT TO SSD
-                </MudButton>
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
+    <MudGrid>
+        @* --- SEARCH ENGINE --- *@
+        <MudItem xs="12" md="5">
+            <MudPaper Elevation="4" Class="pa-4">
+                <MudTextField T="string"
+                              @bind-Value="_searchQuery"
+                              Label="SEARCH REGISTRY (ANIME/MANGA/NOVELS)"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              TextChanged="OnSearchInput" />
 
-    @* Data Table *@
-    <MudTable Items="@_myMedia" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="4" Class="bg-slate-900/50 border border-slate-800">
-        <HeaderContent>
-            <MudTh>TITLE</MudTh>
-            <MudTh>TYPE</MudTh>
-            <MudTh>PROGRESS</MudTh>
-            <MudTh>STATUS</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Title">
-                @if (_editingId == context.Id)
+                @if (_apiResults.Any())
                 {
-                    <MudTextField @bind-Value="_tempTitle" OnBlur="() => SaveTitle(context)" Variant="Variant.Outlined" Margin="Margin.Dense" AutoFocus />
+                    <MudList T="object" Class="mt-4" Style="max-height:500px; overflow-y:auto">
+                        @foreach (var api in _apiResults)
+                        {
+                            <MudListItem OnClick="@(() => AddFromApi(api))">
+                                <div class="d-flex align-center">
+                                    <MudImage Src="@api.Images?.Jpg?.ImageUrl" Width="35" Height="50" Class="rounded mr-3 shadow" />
+                                    <div>
+                                        <MudText Typo="Typo.body1">@api.DisplayTitle</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Info">Type: @(api.Type ?? "N/A")</MudText>
+                                    </div>
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
                 }
-                else
-                {
-                    <MudText @onclick="() => StartEditing(context)" Class="cursor-pointer hover:text-blue-400 font-bold">
-                        @context.Title
-                    </MudText>
-                }
-            </MudTd>
-            <MudTd DataLabel="Type">@context.Type</MudTd>
-            <MudTd DataLabel="Progress">
-                <div class="flex items-center">
-                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="() => AdjustProgress(context, -1)" />
-                    <MudText Class="mx-2 font-mono text-blue-400">EP @context.Progress</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="() => AdjustProgress(context, 1)" />
-                </div>
-            </MudTd>
-            <MudTd DataLabel="Status">
-                <MudSelect T="string" Value="@context.Status" ValueChanged="(s) => UpdateStatus(context, s)" Variant="Variant.Text" Margin="Margin.Dense">
-                    <MudSelectItem Value="@("Watching")">Watching</MudSelectItem>
-                    <MudSelectItem Value="@("Completed")">Completed</MudSelectItem>
-                    <MudSelectItem Value="@("Plan to Watch")">Plan to Watch</MudSelectItem>
-                    <MudSelectItem Value="@("Dropped")">Dropped</MudSelectItem>
-                </MudSelect>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+            </MudPaper>
+        </MudItem>
+
+        @* --- THE TRACKER DASHBOARD --- *@
+        <MudItem xs="12" md="7">
+            <MudTable T="MediaEntry" 
+                      Items="@_allMedia" 
+                      Hover="true" 
+                      Elevation="4" 
+                      GroupBy="@_groupDefinition">
+                <HeaderContent>
+                    <MudTh>INTELLIGENCE</MudTh>
+                    <MudTh>PROGRESS</MudTh>
+                    <MudTh>STATUS</MudTh>
+                    <MudTh>ACTIONS</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                    <MudTh Class="mud-theme-primary" Style="font-weight: bold; text-transform: uppercase;" colspan="4">
+                        @((context.Key?.ToString() ?? "GENERAL").ToUpperInvariant())
+                    </MudTh>
+                </GroupHeaderTemplate>
+                <RowTemplate Context="mediaItem">
+                    <MudTd DataLabel="INTELLIGENCE">
+                        <div class="d-flex align-center">
+                            <MudImage Src="@mediaItem.ImageUrl" Width="35" Height="50" Class="rounded mr-3 shadow" />
+                            <div>
+                                <MudText Typo="Typo.body2" Style="font-weight: bold;">@mediaItem.Title</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@mediaItem.EnglishTitle (@mediaItem.Type)</MudText>
+                            </div>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="PROGRESS">
+                        <div class="d-flex align-center">
+                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" Color="Color.Error" OnClick="@(() => AdjustProgress(mediaItem, -1))" />
+                            <span class="mx-2 font-mono">@mediaItem.Progress / @(mediaItem.TotalEpisodes ?? 0)</span>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Color="Color.Success" OnClick="@(() => AdjustProgress(mediaItem, 1))" />
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="STATUS">
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">@mediaItem.Status</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="ACTIONS">
+                        <MudMenu Label="UPDATE" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small">
+                            @if (mediaItem.Type == "Anime")
+                            {
+                                <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Watching"))">WATCHING</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Plan to Watch"))">PLAN TO WATCH</MudMenuItem>
+                            }
+                            else
+                            {
+                                <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Reading"))">READING</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Plan to Read"))">PLAN TO READ</MudMenuItem>
+                            }
+                            <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Completed"))">COMPLETED</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "On Hold"))">ON HOLD</MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 @code {
-    private List<MediaEntry> _myMedia = new();
-    private MediaEntry _newEntry = new() { Status = "Watching" };
-    private int? _editingId;
-    private string _tempTitle = "";
+    private List<MediaEntry> _allMedia = [];
+    private List<AnimeData> _apiResults = [];
+    private string _searchQuery = "";
+    private System.Threading.Timer? _debounceTimer;
 
-    protected override async Task OnInitializedAsync() => await ReloadFromDisk();
+    private TableGroupDefinition<MediaEntry> _groupDefinition = new() 
+    { 
+        GroupName = "Type", 
+        Selector = (e) => e.Type ?? "Anime" 
+    };
 
-    private async Task ReloadFromDisk()
+    protected override async Task OnInitializedAsync() => await LoadAll();
+
+    private async Task LoadAll()
     {
-        await using var context = await DbFactory.CreateDbContextAsync();
-        _myMedia = await context.MediaEntries.ToListAsync();
+        await using var db = await DbFactory.CreateDbContextAsync();
+        _allMedia = await db.MediaEntries.OrderByDescending(x => x.Id).ToListAsync();
     }
 
-    private async Task AddMedia()
+    private void OnSearchInput(string text)
     {
-        if (string.IsNullOrWhiteSpace(_newEntry.Title)) return;
-        await using var context = await DbFactory.CreateDbContextAsync();
-        await context.MediaEntries.AddAsync(_newEntry);
-        await context.SaveChangesAsync();
-        _newEntry = new MediaEntry { Status = "Watching" };
-        await ReloadFromDisk();
+        _debounceTimer?.Dispose();
+        _debounceTimer = new System.Threading.Timer(_ => { InvokeAsync(async () => await ExecuteSearch(text)); }, null, 400, System.Threading.Timeout.Infinite);
+    }
+
+    private async Task ExecuteSearch(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) 
+        {
+            _apiResults.Clear();
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var animeTask = Jikan.SearchAnimeAsync(text);
+        var mangaTask = Jikan.SearchMangaAsync(text);
+        
+        await Task.WhenAll(animeTask, mangaTask);
+
+        _apiResults = [.. animeTask.Result ?? [], .. mangaTask.Result ?? []];
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task AddFromApi(AnimeData api)
+    {
+        var apiType = api.Type?.ToLower() ?? "anime";
+        
+        // Refined Categorization
+        string cat = "Anime";
+        if (apiType.Contains("novel")) cat = "Light Novel";
+        else if (apiType.Contains("manga") || apiType.Contains("manhwa") || apiType.Contains("manhua")) cat = "Manga";
+        
+        var entry = new MediaEntry { 
+            Title = api.Title, 
+            EnglishTitle = api.TitleEnglish,
+            ImageUrl = api.Images?.Jpg?.ImageUrl, 
+            Type = cat, 
+            Status = cat == "Anime" ? "Plan to Watch" : "Plan to Read", 
+            Progress = 0, 
+            TotalEpisodes = api.Episodes 
+        };
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        db.MediaEntries.Add(entry);
+        await db.SaveChangesAsync();
+
+        _searchQuery = "";
+        _apiResults.Clear();
+        await LoadAll();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task AdjustProgress(MediaEntry item, int amount)
     {
-        await using var context = await DbFactory.CreateDbContextAsync();
-        context.MediaEntries.Attach(item);
-        item.Progress = Math.Max(0, item.Progress + amount);
-        context.Entry(item).Property(x => x.Progress).IsModified = true;
-        await context.SaveChangesAsync();
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var entry = await db.MediaEntries.FindAsync(item.Id);
+        if (entry != null) { entry.Progress += amount; await db.SaveChangesAsync(); await LoadAll(); }
     }
 
-    private async Task UpdateStatus(MediaEntry item, string newStatus)
+    private async Task UpdateStatus(MediaEntry item, string status)
     {
-        if (string.IsNullOrWhiteSpace(newStatus)) return;
-        await using var context = await DbFactory.CreateDbContextAsync();
-        context.MediaEntries.Attach(item);
-        item.Status = newStatus;
-        context.Entry(item).Property(x => x.Status).IsModified = true;
-        await context.SaveChangesAsync();
-        await ReloadFromDisk();
-    }
-
-    private void StartEditing(MediaEntry item)
-    {
-        _editingId = item.Id;
-        _tempTitle = item.Title ?? "";
-    }
-
-    private async Task SaveTitle(MediaEntry item)
-    {
-        if (!string.IsNullOrWhiteSpace(_tempTitle))
-        {
-            await using var context = await DbFactory.CreateDbContextAsync();
-            context.MediaEntries.Attach(item);
-            item.Title = _tempTitle;
-            context.Entry(item).Property(x => x.Title).IsModified = true;
-            await context.SaveChangesAsync();
-        }
-        _editingId = null;
-        await ReloadFromDisk();
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var entry = await db.MediaEntries.FindAsync(item.Id);
+        if (entry != null) { entry.Status = status; await db.SaveChangesAsync(); await LoadAll(); }
     }
 }

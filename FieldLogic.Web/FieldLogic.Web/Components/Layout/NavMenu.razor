@@ -1,29 +1,17 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">FieldLogic.Web</a>
-    </div>
-</div>
+﻿<MudAppBar Elevation="1" Dense="true" Class="bg-slate-900 border-b border-slate-800">
+    <MudText Typo="Typo.h6" Class="font-black tracking-tighter text-blue-500 uppercase">
+        FieldLogic<span class="text-slate-100">Systems</span>
+    </MudText>
+    
+    <MudSpacer />
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
+    @* Navigation Links as Sleek Buttons *@
+    <MudButton Variant="Variant.Text" Href="/" StartIcon="@Icons.Material.Filled.Dashboard" Class="mx-2 text-slate-300">Home</MudButton>
+    <MudButton Variant="Variant.Text" Href="/tracker" StartIcon="@Icons.Material.Filled.Analytics" Class="mx-2 text-slate-300">Tracker</MudButton>
+    <MudButton Variant="Variant.Text" Href="/manage" StartIcon="@Icons.Material.Filled.Settings" Class="mx-2 text-slate-300">Manage</MudButton>
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+    <MudSpacer />
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
+    @* Future Identity Section (Login/User Roles) *@
+    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Edge="Edge.End" />
+</MudAppBar>

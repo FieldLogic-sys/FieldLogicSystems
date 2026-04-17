@@ -1,56 +1,47 @@
-using FieldLogic.Web.Client.Pages;
 using FieldLogic.Web.Components;
-using FieldLogic.Web.Models;
-using FieldLogic.Web.Services; // Ensure this is present
+using FieldLogic.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
-
-
+using FieldLogic.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database Configuration
+// 1. Database Configuration - Use Npgsql for your Postgres DB
+// builder.Services.AddDbContextFactory<AppDbContext>(options =>
+//     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                       ?? throw new InvalidOperationException("CRITICAL FAULT: Connection string 'DefaultConnection' not found in appsettings.json.");
+
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    options.UseSqlite("Data Source=FieldLogic.db"));
+    options.UseNpgsql(connectionString));
 
-// 2. Register the Jikan Engine
+
+// 2. Register Services
 builder.Services.AddHttpClient<JikanService>();
+builder.Services.AddMudServices();
 
-// 3. Blazor Services
+// 3. Blazor Setup
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddMudServices();
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configuration Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
 }
-else
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
-}
 
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 app.UseAntiforgery();
-
 app.MapStaticAssets();
-app.MapRazorComponents<App>()
+
+// THE KEY FIX: Use the full namespace for App to avoid the 'FieldLogic.Web' conflict
+app.MapRazorComponents<FieldLogic.Web.Components.App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(FieldLogic.Web.Client._Imports).Assembly);
-
-// 4. THE STARTUP TEST
-using (var scope = app.Services.CreateScope())
-{
-    var jikan = scope.ServiceProvider.GetRequiredService<JikanService>();
-    var results = await jikan.SearchAnimeAsync("Iruma-kun");
-    Console.WriteLine($"[SYSTEM CHECK] Found {results.Count} anime results.");
-}
 
 app.Run();

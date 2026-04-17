@@ -1,0 +1,27 @@
+@page "/anime"
+@using FieldLogic.Shared
+@using Microsoft.EntityFrameworkCore
+
+@inject AppDbContext Db
+@inject IDbContextFactory<AppDbContext> DbFactory
+
+<MudText Typo="Typo.h3">Anime Tracker</MudText>
+
+<MudPaper Class="pa-4 mt-4">
+    <MudTextField @bind-Value="_newTitle" Label="Anime Title" Variant="Variant.Outlined" />
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddAnime" Class="mt-2">Add to List</MudButton>
+</MudPaper>
+
+@code {
+    private string _newTitle = "";
+
+    private async Task AddAnime()
+    {
+        if (string.IsNullOrWhiteSpace(_newTitle)) return;
+
+        var entry = new MediaEntry { Title = _newTitle };
+        Db.MediaEntries.Add(entry);
+        await Db.SaveChangesAsync();
+        _newTitle = "";
+    }
+}

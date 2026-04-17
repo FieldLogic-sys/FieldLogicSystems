@@ -32,5 +32,23 @@ public class JikanService
             return new();
         }
     }
+
+
+    public async Task<List<AnimeData>> SearchMangaAsync(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query)) return [];
+        var url = $"https://api.jikan.moe/v4/manga?q={Uri.EscapeDataString(query)}&limit=5";
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<AnimeSearchResponse>(url);
+            return response?.Data ?? [];
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Manga API Error: {ex.Message}");
+            return [];
+            
+        }
+    }
 }
 

@@ -1,0 +1,36 @@
+@using FieldLogic.Shared.Models
+
+<MudPaper Elevation="4" Class="pa-6 hover-card" 
+          Style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; height: 100%; display: flex; flex-direction: column;">
+    
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h6" Style="color: white; font-weight: 800; text-transform: uppercase; font-size: 0.9rem;">@Note.Title</MudText>
+        <MudChip T="string" Size="Size.Small" Style="@GetChipStyle(Note.Type)" Variant="Variant.Text">@Note.Type</MudChip>
+    </div>
+
+    <MudText Typo="Typo.body2" Style="color: #94a3b8; flex-grow: 1; line-height: 1.6;">
+        @((Note.Content.Length > 120) ? Note.Content.Substring(0, 120) + "..." : Note.Content)
+    </MudText>
+
+    <div class="d-flex gap-2 mt-6">
+        <MudButton Variant="Variant.Text" Size="Size.Small" Style="color: #3b82f6; font-weight: bold;" OnClick="OnEdit">EDIT</MudButton>
+        <MudButton Variant="Variant.Text" Size="Size.Small" Style="color: #ef4444; font-weight: bold;" OnClick="OnArchive">ARCHIVE</MudButton>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public IntelligenceNote Note { get; set; } = null!;
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnArchive { get; set; }
+
+    private string GetChipStyle(NoteType type) => type switch {
+        NoteType.Technical => "color: #ef4444; border: 1px solid #ef4444;",
+        NoteType.Research => "color: #3b82f6; border: 1px solid #3b82f6;",
+        _ => "color: #10b981; border: 1px solid #10b981;"
+    };
+}
+
+<style>
+    .hover-card { transition: all 0.3s ease; }
+    .hover-card:hover { border-color: #3b82f6 !important; transform: translateY(-4px); }
+</style>

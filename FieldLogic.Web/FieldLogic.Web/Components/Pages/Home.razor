@@ -1,72 +1,76 @@
-﻿@page "/"
+@page "/"
+@inject NavigationManager Nav
 
 <PageTitle>Command Center | FieldLogic-Sys</PageTitle>
 
-<div class="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
-    
-    @* Hero / Brand Section *@
-    <header class="flex flex-col items-center justify-center pt-20 pb-12 px-6 text-center border-b border-slate-900 shadow-2xl bg-slate-900/50">
-        <img src="images/logo.png" alt="FieldLogic Logo" class="w-56 mb-8 drop-shadow-[0_0_20px_rgba(37,99,235,0.4)]" />
+<div style="min-height: 100vh; background-color: #020617; width: 100%; display: flex; flex-direction: column;">
+    <MudContainer MaxWidth="MaxWidth.False" Class="pa-0 ma-0">
         
-        <h1 class="text-5xl font-black tracking-tight uppercase text-white mb-2">
-            Anthony Edward Aldea
-        </h1>
-        
-        <div class="flex items-center gap-3 mb-6">
-            <span class="h-[1px] w-8 bg-blue-600"></span>
-            <p class="text-blue-400 font-mono tracking-widest text-xs uppercase">Systems Architect | AI Candidate</p>
-            <span class="h-[1px] w-8 bg-blue-600"></span>
-        </div>
+        @* Hero Section - pt-32 adds space between Navbar and your Name *@
+        <MudPaper Elevation="0" Square="true" 
+                  Class="d-flex flex-column align-center justify-center pt-32 pb-16 px-6" 
+                  Style="background-color: #0f172a; border-bottom: 1px solid #1e293b; width: 100%; margin-top: -64px;">
+            
+            <MudImage Src="images/logo.png" Alt="FieldLogic Logo" Width="224" Class="mb-8" 
+                      Style="filter: drop-shadow(0 0 10px rgba(37, 99, 235, 0.4));" />
+            
+            <MudText Typo="Typo.h2" Style="color: white; font-weight: 900; text-transform: uppercase; letter-spacing: -2px;">
+                Anthony Edward Aldea
+            </MudText>
+            
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-6">
+                <div style="height: 1px; width: 32px; background-color: #2563eb;"></div>
+                <MudText Typo="Typo.overline" Style="color: #60a5fa; letter-spacing: 3px;">Systems Architect | AI Candidate</MudText>
+                <div style="height: 1px; width: 32px; background-color: #2563eb;"></div>
+            </MudStack>
 
-        <p class="text-lg text-slate-400 max-w-2xl italic font-light font-serif">
-            "Control the memory, control the machine."
-        </p>
-    </header>
+            <MudText Typo="Typo.body1" Style="color: #94a3b8; max-width: 600px; font-style: italic; font-family: 'serif';">
+                "Control the memory, control the machine."
+            </MudText>
+        </MudPaper>
 
-    @* Navigation / Modules Grid *@
-    <section class="max-w-6xl mx-auto w-full p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        @* Tracker Module (Active) *@
-        <a href="tracker" class="group relative p-8 bg-slate-900 border border-slate-800 rounded-2xl hover:border-blue-500 hover:bg-slate-800/50 transition-all duration-300 overflow-hidden shadow-lg">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
-                @* Heroicon: Device-Tablet SVG *@
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 text-blue-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-                </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-white mb-3 tracking-tight">Media Tracker</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
-                Anime and Manga intelligence gathering. Tracking progress through the digital landscape.
-            </p>
-            <div class="mt-6 flex items-center text-blue-500 text-sm font-bold uppercase tracking-tighter">
-                Access Module <span class="ml-2 group-hover:translate-x-2 transition-transform">→</span>
-            </div>
-        </a>
+        @* Modules Grid *@
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-10 px-10 pb-16">
+            <MudGrid Spacing="6" Justify="Justify.Center">
+                
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="4" Class="pa-8 cursor-pointer hover-card" 
+                              Style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; height: 100%; position: relative; z-index: 50;"
+                              @onclick="@(() => Nav.NavigateTo("tracker"))">
+                        <MudText Typo="Typo.h5" Style="color: white; font-weight: bold;" Class="mb-3">Media Tracker</MudText>
+                        <MudText Typo="Typo.body2" Style="color: #94a3b8;">
+                            Anime and Manga intelligence gathering.
+                        </MudText>
+                        <MudText Typo="Typo.button" Class="mt-6 d-block" Style="color: #3b82f6; font-weight: bold;">ACCESS MODULE →</MudText>
+                    </MudPaper>
+                </MudItem>
 
-        @* Hardware Registry (Locked) *@
-        <div class="p-8 bg-slate-950 border border-slate-900 rounded-2xl opacity-30 grayscale pointer-events-none relative shadow-md">
-            <h3 class="text-2xl font-bold text-slate-500 mb-3 uppercase tracking-tight">Hardware Registry</h3>
-            <p class="text-slate-600 text-sm italic">Gilbarco/Veeder-Root diagnostic suite. Waiting for field commissioning...</p>
-            <span class="absolute bottom-6 right-8 text-[9px] font-mono text-slate-800">STATUS: OFFLINE</span>
-        </div>
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="4" Class="pa-8 cursor-pointer hover-card" 
+                              Style="background-color: #0f172a; border: 1px solid #2563eb; border-radius: 16px; height: 100%; position: relative; z-index: 50;"
+                              @onclick="@(() => Nav.NavigateTo("intelligence"))">
+                        <MudText Typo="Typo.h5" Style="color: white; font-weight: bold;" Class="mb-3">Intelligence Unit</MudText>
+                        <MudText Typo="Typo.body2" Style="color: #94a3b8;">
+                            Field hardware documentation and research repository.
+                        </MudText>
+                        <MudText Typo="Typo.button" Class="mt-6 d-block" Style="color: #3b82f6; font-weight: bold;">ACCESS MODULE →</MudText>
+                    </MudPaper>
+                </MudItem>
 
-        @* Technical Labs (Locked) *@
-        <div class="p-8 bg-slate-950 border border-slate-900 rounded-2xl opacity-30 grayscale pointer-events-none relative shadow-md">
-            <h3 class="text-2xl font-bold text-slate-500 mb-3 uppercase tracking-tight">Technical Labs</h3>
-            <p class="text-slate-600 text-sm italic">WGU MSSWEAIE Portfolio projects and AI scaling experiments.</p>
-            <span class="absolute bottom-6 right-8 text-[9px] font-mono text-slate-800">STATUS: OFFLINE</span>
-        </div>
-
-    </section>
-
-    @* System Status Bar (Footer) *@
-    <footer class="mt-auto border-t border-slate-900 p-4 bg-black/20">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-            <div>Environment: .NET 10.0.x-LTS</div>
-            <div class="flex gap-4">
-                <span class="flex items-center gap-1"><span class="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span> Hostinger KVM Active</span>
-                <span>Uptime: 100%</span>
-            </div>
-        </div>
-    </footer>
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="0" Class="pa-8" 
+                              Style="background-color: #020617; border: 1px solid #0f172a; border-radius: 16px; height: 100%; opacity: 0.3;">
+                        <MudText Typo="Typo.h5" Style="color: #475569; font-weight: bold;" Class="mb-3 uppercase">Technical Labs</MudText>
+                        <MudText Typo="Typo.body2" Style="color: #475569;">WGU MSSWEAIE Portfolio projects.</MudText>
+                        <MudText Typo="Typo.caption" Class="mt-6 d-block" Style="color: #1e293b; font-family: monospace;">STATUS: OFFLINE</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </MudContainer>
 </div>
+
+<style>
+    .hover-card { transition: all 0.3s ease; }
+    .hover-card:hover { transform: translateY(-4px); border-color: #3b82f6 !important; background-color: #1e293b !important; }
+</style>

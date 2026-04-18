@@ -1,6 +1,5 @@
 ﻿@inherits LayoutComponentBase
 
-@* Global Controllers for MudBlazor functionality *@
 <MudThemeProvider DefaultScrollbar="true" />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -8,7 +7,8 @@
 
 <MudLayout>
     <NavMenu /> 
-    <MudMainContent Class="pa-4">
+
+    <MudMainContent Class="pa-0 pt-16">
         @Body
     </MudMainContent>
 </MudLayout>

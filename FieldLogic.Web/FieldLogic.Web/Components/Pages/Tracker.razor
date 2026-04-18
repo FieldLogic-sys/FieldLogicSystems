@@ -6,102 +6,103 @@
 @inject JikanService Jikan
 @rendermode InteractiveAuto
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
-    <MudText Typo="Typo.h3" Color="Color.Primary" Style="font-weight: 900;">MEDIA INTELLIGENCE UNIT</MudText>
-    <MudText Typo="Typo.subtitle1" Class="mb-6 mud-text-secondary font-mono">STATUS: DATABASE CONNECTED // API: JIKAN V4</MudText>
+<div style="min-height: 100vh; background-color: #020617; width: 100%; display: flex; flex-direction: column;">
+    <MudContainer MaxWidth="MaxWidth.False" Class="pa-0 ma-0" Style="flex-grow: 1;">
+        
+        <MudPaper Elevation="0" Square="true" Class="pa-8 mb-8" Style="background-color: #0f172a; border-bottom: 1px solid #1e293b;">
+            <MudContainer MaxWidth="MaxWidth.Large">
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Style="color: #3b82f6;" Size="Size.Large" />
+                    <MudText Typo="Typo.h4" Class="font-weight-black text-uppercase tracking-tighter" Style="color: white;">
+                        MEDIA <span style="color: #60a5fa;">INTELLIGENCE</span> UNIT
+                    </MudText>
+                </MudStack>
+                <MudText Typo="Typo.caption" Style="color: #475569; letter-spacing: 2px;">STATUS: DATABASE CONNECTED // API: JIKAN V4</MudText>
+            </MudContainer>
+        </MudPaper>
 
-    <MudGrid>
-        @* --- SEARCH ENGINE --- *@
-        <MudItem xs="12" md="5">
-            <MudPaper Elevation="4" Class="pa-4">
-                <MudTextField T="string"
-                              @bind-Value="_searchQuery"
-                              Label="SEARCH REGISTRY (ANIME/MANGA/NOVELS)"
-                              Variant="Variant.Outlined"
-                              Adornment="Adornment.End"
-                              AdornmentIcon="@Icons.Material.Filled.Search"
-                              Immediate="true"
-                              TextChanged="OnSearchInput" />
+        <MudContainer MaxWidth="MaxWidth.Large" Class="pb-16">
+            <MudGrid Justify="Justify.Center">
+                
+                <MudItem xs="12" md="5">
+                    <MudPaper Elevation="4" Class="pa-6" Style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 12px; position: relative; z-index: 50;">
+                        <MudTextField T="string"
+                                      Value="@_searchQuery"
+                                      Label="SEARCH REGISTRY"
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      AdornmentColor="Color.Info"
+                                      Immediate="true"
+                                      Margin="Margin.Dense"
+                                      Style="color: #cbd5e1;" 
+                                      Class="custom-search-field"
+                                      ValueChanged="OnSearchInput" />
 
-                @if (_apiResults.Any())
-                {
-                    <MudList T="object" Class="mt-4" Style="max-height:500px; overflow-y:auto">
-                        @foreach (var api in _apiResults)
+                        @if (_apiResults.Any())
                         {
-                            <MudListItem OnClick="@(() => AddFromApi(api))">
+                            <MudList T="object" Class="mt-2 rounded shadow-xl" 
+                                     Style="max-height:400px; overflow-y:auto; background-color: #020617; border: 1px solid #3b82f6; position: absolute; width: 92%; z-index: 100;">
+                                @foreach (var api in _apiResults)
+                                {
+                                    <MudListItem OnClick="@(() => AddFromApi(api))" Ripple="true">
+                                        <div class="d-flex align-center">
+                                            <MudImage Src="@api.Images?.Jpg?.ImageUrl" Width="35" Height="50" Class="rounded mr-3 shadow" />
+                                            <div>
+                                                <MudText Typo="Typo.body2" Style="color: white; font-weight: bold;">@api.DisplayTitle</MudText>
+                                                <MudText Typo="Typo.caption" Style="color: #60a5fa;">TYPE: @(api.Type ?? "N/A")</MudText>
+                                            </div>
+                                        </div>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        }
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="7">
+                    <MudTable T="MediaEntry" Items="@_allMedia" Hover="true" Elevation="4" 
+                              Class="rounded-xl border border-slate-800" Style="background-color: #0f172a;" GroupBy="@_groupDefinition">
+                        <HeaderContent>
+                            <MudTh Style="color: #94a3b8; font-size: 0.7rem; letter-spacing: 1px;">INTELLIGENCE</MudTh>
+                            <MudTh Style="color: #94a3b8; font-size: 0.7rem; letter-spacing: 1px;">PROGRESS</MudTh>
+                            <MudTh Style="color: #94a3b8; font-size: 0.7rem; letter-spacing: 1px;">STATUS</MudTh>
+                            <MudTh Style="color: #94a3b8; font-size: 0.7rem; letter-spacing: 1px;">ACTIONS</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="mediaItem">
+                            <MudTd DataLabel="INTELLIGENCE">
                                 <div class="d-flex align-center">
-                                    <MudImage Src="@api.Images?.Jpg?.ImageUrl" Width="35" Height="50" Class="rounded mr-3 shadow" />
+                                    <MudImage Src="@mediaItem.ImageUrl" Width="35" Height="50" Class="rounded mr-3 shadow" />
                                     <div>
-                                        <MudText Typo="Typo.body1">@api.DisplayTitle</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Info">Type: @(api.Type ?? "N/A")</MudText>
+                                        <MudText Typo="Typo.body2" Style="font-weight: bold; color: white;">@mediaItem.Title</MudText>
+                                        <MudText Typo="Typo.caption" Style="color: #64748b;">@mediaItem.Type</MudText>
                                     </div>
                                 </div>
-                            </MudListItem>
-                        }
-                    </MudList>
-                }
-            </MudPaper>
-        </MudItem>
+                            </MudTd>
+                            <MudTd DataLabel="PROGRESS">
+                                <div class="d-flex align-center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" Color="Color.Error" OnClick="@(() => AdjustProgress(mediaItem, -1))" />
+                                    <span class="mx-2 font-mono" style="color: white;">@mediaItem.Progress / @(mediaItem.TotalEpisodes ?? 0)</span>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Color="Color.Success" OnClick="@(() => AdjustProgress(mediaItem, 1))" />
+                                </div>
+                            </MudTd>
+                            <MudTd DataLabel="STATUS">
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">@mediaItem.Status</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="ACTIONS">
+                                <MudMenu Icon="@Icons.Material.Filled.MoreVert" Style="color: #94a3b8;" Size="Size.Small" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </MudContainer>
+</div>
 
-        @* --- THE TRACKER DASHBOARD --- *@
-        <MudItem xs="12" md="7">
-            <MudTable T="MediaEntry" 
-                      Items="@_allMedia" 
-                      Hover="true" 
-                      Elevation="4" 
-                      GroupBy="@_groupDefinition">
-                <HeaderContent>
-                    <MudTh>INTELLIGENCE</MudTh>
-                    <MudTh>PROGRESS</MudTh>
-                    <MudTh>STATUS</MudTh>
-                    <MudTh>ACTIONS</MudTh>
-                </HeaderContent>
-                <GroupHeaderTemplate>
-                    <MudTh Class="mud-theme-primary" Style="font-weight: bold; text-transform: uppercase;" colspan="4">
-                        @((context.Key?.ToString() ?? "GENERAL").ToUpperInvariant())
-                    </MudTh>
-                </GroupHeaderTemplate>
-                <RowTemplate Context="mediaItem">
-                    <MudTd DataLabel="INTELLIGENCE">
-                        <div class="d-flex align-center">
-                            <MudImage Src="@mediaItem.ImageUrl" Width="35" Height="50" Class="rounded mr-3 shadow" />
-                            <div>
-                                <MudText Typo="Typo.body2" Style="font-weight: bold;">@mediaItem.Title</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@mediaItem.EnglishTitle (@mediaItem.Type)</MudText>
-                            </div>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="PROGRESS">
-                        <div class="d-flex align-center">
-                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" Color="Color.Error" OnClick="@(() => AdjustProgress(mediaItem, -1))" />
-                            <span class="mx-2 font-mono">@mediaItem.Progress / @(mediaItem.TotalEpisodes ?? 0)</span>
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Color="Color.Success" OnClick="@(() => AdjustProgress(mediaItem, 1))" />
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="STATUS">
-                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">@mediaItem.Status</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="ACTIONS">
-                        <MudMenu Label="UPDATE" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small">
-                            @if (mediaItem.Type == "Anime")
-                            {
-                                <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Watching"))">WATCHING</MudMenuItem>
-                                <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Plan to Watch"))">PLAN TO WATCH</MudMenuItem>
-                            }
-                            else
-                            {
-                                <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Reading"))">READING</MudMenuItem>
-                                <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Plan to Read"))">PLAN TO READ</MudMenuItem>
-                            }
-                            <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "Completed"))">COMPLETED</MudMenuItem>
-                            <MudMenuItem OnClick="@(() => UpdateStatus(mediaItem, "On Hold"))">ON HOLD</MudMenuItem>
-                        </MudMenu>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudItem>
-    </MudGrid>
-</MudContainer>
+<style>
+    .custom-search-field .mud-input-label { color: #94a3b8 !important; }
+</style>
 
 @code {
     private List<MediaEntry> _allMedia = [];
@@ -109,11 +110,7 @@
     private string _searchQuery = "";
     private System.Threading.Timer? _debounceTimer;
 
-    private TableGroupDefinition<MediaEntry> _groupDefinition = new() 
-    { 
-        GroupName = "Type", 
-        Selector = (e) => e.Type ?? "Anime" 
-    };
+    private TableGroupDefinition<MediaEntry> _groupDefinition = new() { GroupName = "Type", Selector = (e) => e.Type ?? "Anime" };
 
     protected override async Task OnInitializedAsync() => await LoadAll();
 
@@ -125,24 +122,17 @@
 
     private void OnSearchInput(string text)
     {
+        _searchQuery = text;
         _debounceTimer?.Dispose();
         _debounceTimer = new System.Threading.Timer(_ => { InvokeAsync(async () => await ExecuteSearch(text)); }, null, 400, System.Threading.Timeout.Infinite);
     }
 
     private async Task ExecuteSearch(string text)
     {
-        if (string.IsNullOrWhiteSpace(text)) 
-        {
-            _apiResults.Clear();
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
-
+        if (string.IsNullOrWhiteSpace(text)) { _apiResults.Clear(); await InvokeAsync(StateHasChanged); return; }
         var animeTask = Jikan.SearchAnimeAsync(text);
         var mangaTask = Jikan.SearchMangaAsync(text);
-        
         await Task.WhenAll(animeTask, mangaTask);
-
         _apiResults = [.. animeTask.Result ?? [], .. mangaTask.Result ?? []];
         await InvokeAsync(StateHasChanged);
     }
@@ -150,30 +140,12 @@
     private async Task AddFromApi(AnimeData api)
     {
         var apiType = api.Type?.ToLower() ?? "anime";
-        
-        // Refined Categorization
-        string cat = "Anime";
-        if (apiType.Contains("novel")) cat = "Light Novel";
-        else if (apiType.Contains("manga") || apiType.Contains("manhwa") || apiType.Contains("manhua")) cat = "Manga";
-        
-        var entry = new MediaEntry { 
-            Title = api.Title, 
-            EnglishTitle = api.TitleEnglish,
-            ImageUrl = api.Images?.Jpg?.ImageUrl, 
-            Type = cat, 
-            Status = cat == "Anime" ? "Plan to Watch" : "Plan to Read", 
-            Progress = 0, 
-            TotalEpisodes = api.Episodes 
-        };
-
+        string cat = apiType.Contains("novel") ? "Light Novel" : (apiType.Contains("manga") ? "Manga" : "Anime");
+        var entry = new MediaEntry { Title = api.Title, EnglishTitle = api.TitleEnglish, ImageUrl = api.Images?.Jpg?.ImageUrl, Type = cat, Status = cat == "Anime" ? "Plan to Watch" : "Plan to Read", Progress = 0, TotalEpisodes = api.Episodes };
         await using var db = await DbFactory.CreateDbContextAsync();
         db.MediaEntries.Add(entry);
         await db.SaveChangesAsync();
-
-        _searchQuery = "";
-        _apiResults.Clear();
-        await LoadAll();
-        await InvokeAsync(StateHasChanged);
+        _searchQuery = ""; _apiResults.Clear(); await LoadAll(); await InvokeAsync(StateHasChanged);
     }
 
     private async Task AdjustProgress(MediaEntry item, int amount)

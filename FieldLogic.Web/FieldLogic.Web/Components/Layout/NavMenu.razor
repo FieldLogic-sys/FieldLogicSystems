@@ -1,17 +1,22 @@
-﻿<MudAppBar Elevation="1" Dense="true" Class="bg-slate-900 border-b border-slate-800">
-    <MudText Typo="Typo.h6" Class="font-black tracking-tighter text-blue-500 uppercase">
-        FieldLogic<span class="text-slate-100">Systems</span>
+﻿<MudAppBar Elevation="0" Dense="true" Style="background-color: #0f172a !important; border-bottom: 1px solid #1e293b !important; z-index: 1000;">
+    <MudText Typo="Typo.h6" Class="font-weight-black tracking-tighter" Style="color: #3b82f6; text-transform: uppercase;">
+        FIELDLOGIC<span style="color: #f1f5f9;">SYSTEMS</span>
     </MudText>
     
     <MudSpacer />
 
-    @* Navigation Links as Sleek Buttons *@
-    <MudButton Variant="Variant.Text" Href="/" StartIcon="@Icons.Material.Filled.Dashboard" Class="mx-2 text-slate-300">Home</MudButton>
-    <MudButton Variant="Variant.Text" Href="/tracker" StartIcon="@Icons.Material.Filled.Analytics" Class="mx-2 text-slate-300">Tracker</MudButton>
-    <MudButton Variant="Variant.Text" Href="/manage" StartIcon="@Icons.Material.Filled.Settings" Class="mx-2 text-slate-300">Manage</MudButton>
+    <div class="d-flex">
+        <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Class="nav-link-custom">Home</MudNavLink>
+        <MudNavLink Href="/tracker" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Analytics" Class="nav-link-custom">Tracker</MudNavLink>
+        <MudNavLink Href="/intelligence" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook" Class="nav-link-custom">Intelligence</MudNavLink>
+        <MudNavLink Href="/manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings" Class="nav-link-custom">Manage</MudNavLink>
+    </div>
 
     <MudSpacer />
-
-    @* Future Identity Section (Login/User Roles) *@
-    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Edge="Edge.End" />
+    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Style="color: #94a3b8;" Edge="Edge.End" />
 </MudAppBar>
+
+<style>
+    .nav-link-custom { color: #94a3b8 !important; margin: 0 4px; text-transform: uppercase; font-size: 0.75rem; }
+    .nav-link-custom.active { color: #60a5fa !important; background-color: rgba(96, 165, 250, 0.1) !important; border-radius: 4px; }
+</style>

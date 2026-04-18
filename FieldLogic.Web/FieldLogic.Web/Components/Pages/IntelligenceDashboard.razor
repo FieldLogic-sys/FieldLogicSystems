@@ -1,0 +1,82 @@
+@page "/intelligence"
+@using FieldLogic.Shared.Models
+@using FieldLogic.Web.Services
+@using FieldLogic.Web.Components.UI
+@inject IntelligenceService IntelService
+@inject ISnackbar Snackbar
+
+@* MaxWidth="false" ensures the background color hits the edges *@
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-0 ma-0" Style="min-height: 100vh; background-color: #020617;">
+    
+    @* Page Header Section *@
+    <MudPaper Elevation="0" Square="true" Class="pa-8" Style="background-color: #0f172a; border-bottom: 1px solid #1e293b;">
+        <MudContainer MaxWidth="MaxWidth.Large">
+            <MudStack Row="true" AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Style="color: #3b82f6;" Size="Size.Large" />
+                <MudText Typo="Typo.h4" Class="font-weight-black text-uppercase tracking-tighter" Style="color: white;">
+                    Intelligence <span style="color: #60a5fa;">Repository</span>
+                </MudText>
+            </MudStack>
+            <MudText Typo="Typo.caption" Style="color: #475569; letter-spacing: 2px;">SYSTEM: FIELD LOGS // DB: POSTGRESQL ACTIVE</MudText>
+        </MudContainer>
+    </MudPaper>
+
+    <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+        @* --- LIVE SEARCH ENGINE --- *@
+        <MudPaper Elevation="4" Class="pa-4 mb-8" Style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 12px;">
+            <MudTextField Value="_searchTerm" 
+                          T="string"
+                          Label="HARDWARE & LOG SEARCH"
+                          Placeholder="Search Gilbarco, .NET, or Field Intel..." 
+                          Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Search" 
+                          Immediate="true"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Style="color: white;"
+                          ValueChanged="@OnSearch" />
+        </MudPaper>
+
+        @if (_notes == null)
+        {
+            <MudProgressLinear Color="Color.Info" Indeterminate="true" />
+        }
+        else
+        {
+            @* RESTORED: Grid of Cards *@
+            <MudGrid Spacing="6">
+                @foreach (var note in _notes)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <IntelligenceNoteCard Note="note" 
+                                             OnEdit="@(() => Snackbar.Add("Edit Mode", Severity.Info))" 
+                                             OnArchive="@(() => Archive(note.Id))" />
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </MudContainer>
+</MudContainer>
+
+@code {
+    private List<IntelligenceNote>? _notes;
+    private string _searchTerm = "";
+
+    protected override async Task OnInitializedAsync() => _notes = await IntelService.GetAllNotesAsync();
+
+    private async Task OnSearch(string text)
+    {
+        _searchTerm = text;
+        _notes = string.IsNullOrWhiteSpace(_searchTerm) 
+            ? await IntelService.GetAllNotesAsync() 
+            : await IntelService.SearchNoteAsync(_searchTerm);
+        StateHasChanged();
+    }
+
+    private async Task Archive(int id)
+    {
+        await IntelService.ArchiveNoteAsync(id);
+        _notes = await IntelService.GetAllNotesAsync();
+        Snackbar.Add("Entry Archived", Severity.Warning);
+    }
+}

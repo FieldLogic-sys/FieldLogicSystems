@@ -1,16 +1,11 @@
-// The many sides of the relationship in the db
-
-
-
 namespace FieldLogic.Shared.Models;
 
 public class Tag
 {
-    public int Id { get; set;  }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    
-    // The many-to-many tag links back to many notes that use the tag(s)
 
-
+    // Many-to-Many back-reference
+    // Adding 'null!' tells Rider: "I know EF Core will fill this, don't worry about nulls."
     public List<IntelligenceNote> Notes { get; set; } = [];
 }

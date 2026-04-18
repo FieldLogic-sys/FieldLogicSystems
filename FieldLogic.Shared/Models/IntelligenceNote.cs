@@ -32,7 +32,8 @@ public class IntelligenceNote
     } = [];
     
     
-    public List<Tag> Tags {get;set;} = [];
+    public List<Tag> Tags {get; set;} = [];
 
-
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set;  }
 }
